@@ -2,179 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "@fontsource/dm-serif-display/400.css";
-@import "@fontsource/dm-serif-display/400-italic.css";
-@import "@fontsource/inter/300.css";
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
 
 @layer base {
   :root {
-    --navy-950: #060d1a;
-    --navy-900: #0b1426;
-    --navy-800: #0f1a33;
-    --navy-700: #152240;
-    --navy-600: #1a2d50;
-    --teal-500: #0891b2;
-    --teal-400: #06b6d4;
-    --teal-300: #22d3ee;
-    --amber-500: #d97706;
-    --amber-400: #f59e0b;
-    --amber-300: #fbbf24;
-    --stone-100: #f1f5f9;
-    --stone-200: #e2e8f0;
-    --stone-300: #cbd5e1;
-    --stone-400: #94a3b8;
-    --stone-500: #64748b;
-
-    --background: var(--navy-950);
-    --foreground: var(--stone-100);
-    --card: var(--navy-900);
-    --card-foreground: var(--stone-100);
-    --card-border: var(--navy-700);
-    --primary: var(--teal-400);
-    --primary-foreground: var(--navy-950);
-    --secondary: var(--navy-700);
-    --secondary-foreground: var(--stone-100);
-    --muted: var(--navy-800);
-    --muted-foreground: var(--stone-400);
-    --accent: var(--amber-400);
-    --accent-foreground: var(--navy-950);
-    --destructive: #ef4444;
-    --destructive-foreground: var(--stone-100);
-    --border: var(--navy-700);
-    --input: var(--navy-700);
-    --ring: var(--teal-400);
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
 
-    --sidebar: rgba(11, 20, 38, 0.85);
-    --sidebar-border: rgba(21, 34, 64, 0.6);
-    --sidebar-accent: rgba(6, 182, 212, 0.15);
-
-    --chart-1: var(--teal-400);
-    --chart-2: var(--amber-400);
-    --chart-3: #8b5cf6;
-    --chart-4: #ec4899;
-    --chart-5: #10b981;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   * {
     @apply border-border;
-    scrollbar-width: thin;
-    scrollbar-color: var(--navy-600) transparent;
-  }
-
-  ::selection {
-    background-color: rgba(6, 182, 212, 0.3);
-    color: var(--stone-100);
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    background-image:
-      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(6, 182, 212, 0.08) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(217, 119, 6, 0.04) 0%, transparent 70%);
-    background-attachment: fixed;
-  }
-}
-
-@layer components {
-  .card-maritime {
-    @apply bg-[var(--card)] border border-[var(--card-border)] rounded-lg;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
-  }
-  .card-maritime:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
-    border-color: var(--navy-600);
-  }
-
-  .glass-sidebar {
-    background: var(--sidebar);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-right: 1px solid var(--sidebar-border);
-  }
-
-  .status-dot {
-    @apply inline-block w-2 h-2 rounded-full;
-  }
-  .status-dot-disponibila { @apply bg-emerald-400; }
-  .status-dot-rezervata_plata_asteptare { @apply bg-amber-400; }
-  .status-dot-rezervata_si_achitata { @apply bg-teal-400; }
-  .status-dot-indisponibila_temporar { @apply bg-red-400; }
-  .status-dot-ocupata { @apply bg-blue-400; }
-
-  .nav-item-active {
-    @apply bg-[var(--sidebar-accent)] text-teal-300 border-l-2 border-teal-400;
-  }
-  .nav-item-inactive {
-    @apply text-stone-400 hover:text-stone-200 hover:bg-white/[0.04] border-l-2 border-transparent;
-  }
-
-  .heading-serif {
-    font-family: "DM Serif Display", serif;
-    font-weight: 400;
-  }
-
-  .btn-primary {
-    @apply bg-teal-500 hover:bg-teal-400 text-navy-950 font-medium rounded-lg
-           transition-all duration-200 active:scale-[0.98];
-  }
-
-  .wave-bg {
-    position: relative;
-    overflow: hidden;
-  }
-  .wave-bg::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 40px,
-        rgba(6, 182, 212, 0.03) 40px,
-        rgba(6, 182, 212, 0.03) 41px
-      );
-    pointer-events: none;
-  }
-}
-
-@layer utilities {
-  .animate-in {
-    animation: fadeSlideUp 0.4s ease-out forwards;
-    opacity: 0;
-  }
-  .animate-in-delay-1 { animation-delay: 0.05s; }
-  .animate-in-delay-2 { animation-delay: 0.1s; }
-  .animate-in-delay-3 { animation-delay: 0.15s; }
-  .animate-in-delay-4 { animation-delay: 0.2s; }
-
-  @keyframes fadeSlideUp {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes wave {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-25%); }
-  }
-
-  .animate-wave {
-    animation: wave 8s ease-in-out infinite;
-  }
-
-  .text-balance {
-    text-wrap: balance;
+    @apply bg-background text-foreground;
   }
 }
