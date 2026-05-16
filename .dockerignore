@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+*.md
+.env
+.env*.local
+docker-compose*.yml
+nginx/
+.github/
+e2e/
+tests/
+scripts/
+prisma/seed.ts
+Dockerfile
+.dockerignore
