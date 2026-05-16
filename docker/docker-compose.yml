@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: campus-manager-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campus_admin
+      POSTGRES_PASSWORD: campus_secret
+      POSTGRES_DB: campus_manager
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

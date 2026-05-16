@@ -9,6 +9,9 @@
 # testing
 /coverage
 
+# generated pdfs
+*.pdf
+
 # next.js
 /.next/
 /out/
@@ -26,7 +29,17 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+
+# uploaded files
+public/uploads/
+
+# docker volumes
+docker/pgdata/
+
+# prisma generated
+/src/generated/prisma
 
 # vercel
 .vercel

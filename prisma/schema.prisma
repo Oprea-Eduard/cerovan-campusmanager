@@ -1,0 +1,462 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===== AUTH & USERS =====
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String?
+  image         String?
+  role          UserRole  @default(RECEPTIE)
+  isActive      Boolean   @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+
+  checkIns      CheckInOut[]   @relation("ReceptionerCheckIn")
+  checkOuts     CheckInOut[]   @relation("ReceptionerCheckOut")
+  assignments   Housekeeping[] @relation("Camerista")
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  CONDUCERE
+  ADMINISTRATIV
+  RECEPTIE
+  PROGRAMARE
+  CONTABILITATE
+  CAMERISTA
+}
+
+// ===== CURSURI & ÎNSCRIERI =====
+model Cursant {
+  id        String   @id @default(cuid())
+  nume      String
+  prenume   String
+  telefon   String?
+  email     String?
+  ciSerie   String?
+  ciNumar   String?
+  pasaport  String?
+  firma     String?
+
+  inscrieri InscriereCurs[]
+  rezervari Rezervare[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nume, prenume])
+  @@map("cursanti")
+}
+
+model Curs {
+  id        String   @id @default(cuid())
+  denumire  String @unique
+  descriere String?
+  durataZile Int     @default(1)
+  activ     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inscrieri InscriereCurs[]
+  @@map("cursuri")
+}
+
+model InscriereCurs {
+  id              String          @id @default(cuid())
+  cursantId       String
+  cursId          String
+  dataStart       DateTime
+  dataEnd         DateTime
+  statusPlataCurs StatusPlataCurs @default(NEACHITAT)
+
+  cursant Cursant @relation(fields: [cursantId], references: [id], onDelete: Cascade)
+  curs    Curs    @relation(fields: [cursId], references: [id])
+
+  createdAt DateTime @default(now())
+  @@index([cursantId])
+  @@index([cursId])
+  @@map("inscrieri_curs")
+}
+
+enum StatusPlataCurs {
+  NEACHITAT
+  PARTIAL
+  ACHITAT
+  RESTITUIT
+}
+
+// ===== CAMERE & INVENTAR =====
+model Camera {
+  id                 String       @id @default(cuid())
+  numar               String       @unique
+  tip                TipCamera
+  etaj               Int
+  capacitate         Int          @default(2)
+  status             StatusCamera @default(DISPONIBILA)
+  motivIndisponibil  String?
+
+  inventar           InventarCamera[]
+  rezervari          Rezervare[]
+  housekeeping       Housekeeping[]
+  cheie              Cheie?
+  parcare            Parcare[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([etaj])
+  @@map("camere")
+}
+
+enum TipCamera {
+  SINGLE_STANDARD
+  APARTAMENT
+}
+
+enum StatusCamera {
+  DISPONIBILA
+  REZERVATA_PLATA_ASTEPTARE
+  REZERVATA_SI_ACHITATA
+  INDISPONIBILA_TEMPORAR
+  OCUPATA
+}
+
+model InventarCamera {
+  id         String    @id @default(cuid())
+  cameraId   String
+  denumire   String
+  cantitate  Int       @default(1)
+  stare      StareBun  @default(BUN)
+  observatii String?
+
+  camera     Camera     @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+
+  @@index([cameraId])
+  @@map("inventar_camera")
+}
+
+enum StareBun {
+  BUN
+  UZAT
+  DEFECT
+  LIPSA
+}
+
+// ===== REZERVĂRI =====
+model Rezervare {
+  id        String          @id @default(cuid())
+  cursantId String
+  cameraId  String
+  checkIn   DateTime
+  checkOut  DateTime
+  status    StatusRezervare @default(PLATA_ASTEPTARE)
+
+  cursant    Cursant       @relation(fields: [cursantId], references: [id])
+  camera     Camera        @relation(fields: [cameraId], references: [id])
+  plati      Plata[]
+  cerere     CerereCazare?
+  checkInOut CheckInOut?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([cursantId])
+  @@index([cameraId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@map("rezervari")
+}
+
+enum StatusRezervare {
+  PLATA_ASTEPTARE
+  ACHITATA
+  CHECKIN_EFFECTUAT
+  CHECKOUT_EFFECTUAT
+  ANULATA
+}
+
+model CerereCazare {
+  id          String       @id @default(cuid())
+  rezervareId String       @unique
+  aprobatDe   String?
+  aprobatLa   DateTime?
+  status      StatusCerere @default(IN_ASTEPTARE)
+
+  rezervare   Rezervare     @relation(fields: [rezervareId], references: [id], onDelete: Cascade)
+  documente   DocumentAtasat[]
+
+  @@map("cereri_cazare")
+}
+
+enum StatusCerere {
+  IN_ASTEPTARE
+  APROBATA
+  RESPINSA
+}
+
+model DocumentAtasat {
+  id         String       @id @default(cuid())
+  cerereId   String
+  tip        TipDocument
+  numeFisier String
+  caleFisier String
+
+  cerere     CerereCazare @relation(fields: [cerereId], references: [id], onDelete: Cascade)
+
+  @@map("documente_atasate")
+}
+
+enum TipDocument {
+  COPIE_CI
+  DOVADA_INSCRIERE
+  DOVADA_PLATA_CURS
+  ALTE_DOCUMENTE
+}
+
+// ===== PLĂȚI =====
+model Plata {
+  id             String      @id @default(cuid())
+  rezervareId    String
+  suma           Decimal     @db.Decimal(10, 2)
+  metoda         MetodaPlata
+  status         StatusPlata @default(NECONFIRMATA)
+  referinta      String?
+  dataPlata      DateTime?
+  dataConfirmare DateTime?
+
+  rezervare      Rezervare   @relation(fields: [rezervareId], references: [id], onDelete: Cascade)
+
+  @@index([rezervareId])
+  @@map("plati")
+}
+
+enum MetodaPlata {
+  ORDIN_PLATA
+  TRANSFER_BANCAR
+  CASIERIE
+  ALTUL
+}
+
+enum StatusPlata {
+  NECONFIRMATA
+  CONFIRMATA
+  RESTITUITA
+}
+
+// ===== CHECK-IN / CHECK-OUT =====
+model CheckInOut {
+  id                    String   @id @default(cuid())
+  rezervareId           String   @unique
+  dataCheckin           DateTime
+  dataCheckout          DateTime?
+  receptionerCheckinId  String
+  receptionerCheckoutId String?
+  cheiePredata          Boolean  @default(false)
+  cheiePrimita          Boolean  @default(false)
+  stareCameraPreCheckout String?
+  regulamentAcceptat    Boolean  @default(false)
+
+  rezervare     Rezervare     @relation(fields: [rezervareId], references: [id], onDelete: Cascade)
+  receptionerIn User          @relation("ReceptionerCheckIn", fields: [receptionerCheckinId], references: [id])
+  receptionerOut User?        @relation("ReceptionerCheckOut", fields: [receptionerCheckoutId], references: [id])
+  noteConstatare NotaConstatare[]
+  evaluare      Evaluare?
+
+  @@map("checkinout")
+}
+
+model NotaConstatare {
+  id           String   @id @default(cuid())
+  checkInOutId String
+  descriere    String
+  costEstimat  Decimal? @db.Decimal(10, 2)
+  poze         String[]
+  data         DateTime @default(now())
+
+  checkInOut   CheckInOut @relation(fields: [checkInOutId], references: [id], onDelete: Cascade)
+
+  @@map("note_constatare")
+}
+
+model Evaluare {
+  id           String   @id @default(cuid())
+  checkInOutId String   @unique
+  curatenie    Int?
+  confort      Int?
+  dotari       Int?
+  personal     Int?
+  organizare   Int?
+  observatii   String?
+
+  checkInOut   CheckInOut @relation(fields: [checkInOutId], references: [id], onDelete: Cascade)
+
+  @@map("evaluari")
+}
+
+// ===== HOUSEKEEPING =====
+model Housekeeping {
+  id          String           @id @default(cuid())
+  cameraId    String
+  cameristaId String?
+  status      StatusCuratenie  @default(MURDAR)
+  asignatLa   DateTime         @default(now())
+  completatLa DateTime?
+  verificatDe String?
+  verificatLa DateTime?
+
+  camera    Camera @relation(fields: [cameraId], references: [id])
+  camerista User?  @relation("Camerista", fields: [cameristaId], references: [id])
+
+  @@index([cameraId])
+  @@index([status])
+  @@map("housekeeping")
+}
+
+enum StatusCuratenie {
+  MURDAR
+  IN_LUCRU
+  CURAT
+  VERIFICAT
+}
+
+// ===== CHEI =====
+model Cheie {
+  id       String      @id @default(cuid())
+  cameraId String      @unique
+  cod      String
+  status   StatusCheie @default(LA_RECEPTIE)
+
+  camera  Camera         @relation(fields: [cameraId], references: [id])
+  istoric IstoricCheie[]
+
+  @@map("chei")
+}
+
+enum StatusCheie {
+  LA_RECEPTIE
+  PREDATA_CURSANT
+  PIERDUTA
+}
+
+model IstoricCheie {
+  id         String       @id @default(cuid())
+  cheieId    String
+  actiune    ActiuneCheie
+  data       DateTime     @default(now())
+  userId     String
+  observatii String?
+
+  cheie Cheie @relation(fields: [cheieId], references: [id], onDelete: Cascade)
+
+  @@map("istoric_chei")
+}
+
+enum ActiuneCheie {
+  PREDAT
+  PRIMIT
+  PIERDUT
+}
+
+// ===== PARCARE =====
+model Parcare {
+  id       String        @id @default(cuid())
+  numarLoc String        @unique
+  status   StatusParcare @default(LIBER)
+  cameraId String?
+
+  camera Camera? @relation(fields: [cameraId], references: [id])
+
+  @@map("parcare")
+}
+
+enum StatusParcare {
+  LIBER
+  OCUPAT
+  REZERVAT
+}
+
+// ===== OBIECTE PIERDUTE =====
+model ObiectPierdut {
+  id                String       @id @default(cuid())
+  descriere         String
+  gasitLa           DateTime     @default(now())
+  cameraId          String?
+  predatLa          DateTime?
+  contactProprietar String?
+  status            StatusObiect @default(IN_CAUTARE)
+
+  @@map("obiecte_pierdute")
+}
+
+enum StatusObiect {
+  IN_CAUTARE
+  RESTITUIT
+  EXPIRAT
+}
+
+// ===== AUDIT LOG =====
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  actiune   String   @db.VarChar(500)
+  detalii   Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
