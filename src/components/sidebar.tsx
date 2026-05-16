@@ -24,6 +24,9 @@ import {
   Moon,
   Upload,
   FileCheck,
+  Settings as SettingsIcon,
+  Bell,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -52,6 +55,10 @@ const navItems: NavItem[] = [
   { label: "Cereri cazare", href: "/dashboard/cereri", icon: <FileCheck size={20} />, roles: ["CONDUCERE", "ADMINISTRATIV", "PROGRAMARE"] },
   { label: "Night Audit", href: "/dashboard/night-audit", icon: <Moon size={20} />, roles: ["CONDUCERE", "ADMINISTRATIV"] },
   { label: "Documente", href: "/dashboard/documente", icon: <Upload size={20} />, roles: ["PROGRAMARE", "ADMINISTRATIV"] },
+  { label: "Evaluări", href: "/dashboard/evaluari", icon: <Star size={20} />, roles: ["CONDUCERE", "ADMINISTRATIV"] },
+  { label: "Utilizatori", href: "/dashboard/utilizatori", icon: <Users size={20} />, roles: ["CONDUCERE"] },
+  { label: "Notificări", href: "/dashboard/notificari", icon: <Bell size={20} />, roles: ["*"] },
+  { label: "Setări", href: "/dashboard/setari", icon: <SettingsIcon size={20} />, roles: ["CONDUCERE", "ADMINISTRATIV"] },
   { label: "Obiecte pierdute", href: "/dashboard/obiecte-pierdute", icon: <Search size={20} />, roles: ["CONDUCERE", "ADMINISTRATIV"] },
 ];
 

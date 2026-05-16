@@ -6,7 +6,13 @@ export default async function CheckinoutPage() {
     prisma.rezervare.findMany({
       where: { status: "ACHITATA" },
       include: {
-        cursant: { select: { nume: true, prenume: true } },
+        cursant: {
+          include: {
+            inscrieri: {
+              include: { curs: { select: { denumire: true, durataZile: true } } },
+            },
+          },
+        },
         camera: { select: { numar: true, etaj: true } },
       },
       orderBy: { checkIn: "asc" },
@@ -14,7 +20,13 @@ export default async function CheckinoutPage() {
     prisma.rezervare.findMany({
       where: { status: "CHECKIN_EFFECTUAT" },
       include: {
-        cursant: { select: { nume: true, prenume: true } },
+        cursant: {
+          include: {
+            inscrieri: {
+              include: { curs: { select: { denumire: true, durataZile: true } } },
+            },
+          },
+        },
         camera: { select: { numar: true, etaj: true } },
         checkInOut: { select: { dataCheckin: true } },
       },
@@ -32,28 +44,43 @@ export default async function CheckinoutPage() {
     }),
   ]);
 
+  const formatCursuri = (inscrieri: { dataStart: Date; dataEnd: Date; curs: { denumire: string } }[]) =>
+    inscrieri.map(i => ({
+      denumire: i.curs.denumire,
+      perioada: `${i.dataStart.toLocaleDateString("ro-RO")} – ${i.dataEnd.toLocaleDateString("ro-RO")}`,
+    }));
+
   return (
     <CheckInOutClient
       pendingCheckin={rezervariAchitate.map(r => ({
         id: r.id,
         cursant: `${r.cursant.nume} ${r.cursant.prenume}`,
+        email: r.cursant.email || "",
+        telefon: r.cursant.telefon || "",
+        firma: r.cursant.firma || "",
         camera: r.camera.numar,
         etaj: r.camera.etaj,
         checkIn: r.checkIn.toLocaleDateString("ro-RO"),
         checkOut: r.checkOut.toLocaleDateString("ro-RO"),
+        cursuri: formatCursuri(r.cursant.inscrieri || []),
       }))}
       activeCheckin={camereOcupate.map(r => ({
         id: r.id,
         cursant: `${r.cursant.nume} ${r.cursant.prenume}`,
+        email: r.cursant.email || "",
+        telefon: r.cursant.telefon || "",
         camera: r.camera.numar,
         etaj: r.camera.etaj,
         checkIn: r.checkIn.toLocaleDateString("ro-RO"),
         checkOut: r.checkOut.toLocaleDateString("ro-RO"),
         dataCheckin: r.checkInOut?.dataCheckin?.toLocaleDateString("ro-RO") || "-",
+        cursuri: formatCursuri(r.cursant.inscrieri || []),
       }))}
       recentCheckout={rezervariFinalizate.map(r => ({
         id: r.id,
         cursant: `${r.cursant.nume} ${r.cursant.prenume}`,
+        email: "",
+        telefon: "",
         camera: r.camera.numar,
         etaj: 0,
         checkIn: r.checkIn.toLocaleDateString("ro-RO"),
@@ -61,6 +88,7 @@ export default async function CheckinoutPage() {
         dataCheckin: r.checkInOut?.dataCheckin?.toLocaleDateString("ro-RO") || "-",
         dataCheckout: r.checkInOut?.dataCheckout?.toLocaleDateString("ro-RO") || "-",
         areNote: (r.checkInOut?.noteConstatare?.length || 0) > 0,
+        cursuri: [],
       }))}
     />
   );

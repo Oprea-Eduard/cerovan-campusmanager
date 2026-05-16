@@ -99,16 +99,25 @@ model Cursant {
   @@map("cursanti")
 }
 
+enum CategorieCurs {
+  MARITIM
+  FLUVIAL
+  OFFSHORE
+  ONSHORE
+}
+
 model Curs {
-  id        String   @id @default(cuid())
-  denumire  String @unique
+  id        String        @id @default(cuid())
+  denumire  String        @unique
   descriere String?
-  durataZile Int     @default(1)
-  activ     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  durataZile Int           @default(1)
+  categorie CategorieCurs?
+  activ     Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   inscrieri InscriereCurs[]
+  @@index([categorie])
   @@map("cursuri")
 }
 
@@ -142,6 +151,7 @@ model Camera {
   numar               String       @unique
   tip                TipCamera
   etaj               Int
+  proiect            CameraProiect?
   capacitate         Int          @default(2)
   status             StatusCamera @default(DISPONIBILA)
   motivIndisponibil  String?
@@ -163,6 +173,12 @@ model Camera {
 enum TipCamera {
   SINGLE_STANDARD
   APARTAMENT
+}
+
+enum CameraProiect {
+  CORP_A
+  CORP_B
+  ANEXA
 }
 
 enum StatusCamera {
@@ -425,6 +441,51 @@ enum StatusParcare {
   LIBER
   OCUPAT
   REZERVAT
+}
+
+// ===== CONFIGURARE TARIFE =====
+model Tarif {
+  id        String   @id @default(cuid())
+  tipCamera TipCamera
+  valoare   Decimal  @db.Decimal(10, 2)
+  activ     Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@unique([tipCamera, activ])
+  @@map("tarife")
+}
+
+// ===== NOTIFICĂRI =====
+model Notificare {
+  id        String   @id @default(cuid())
+  titlu     String
+  mesaj     String
+  tip       TipNotificare
+  prioritate Prioritate @default(NORMALA)
+  destinatarId String?
+  citita    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@index([destinatarId, citita])
+  @@index([createdAt])
+  @@map("notificari")
+}
+
+enum TipNotificare {
+  PLATA_SCADENTA
+  CHECKIN_ASTEPTARE
+  CERERE_NOUA
+  CAZARE_FINALIZATA
+  SISTEM
+}
+
+enum Prioritate {
+  CRITICA
+  RIDICATA
+  NORMALA
+  SCazUTA
 }
 
 // ===== OBIECTE PIERDUTE =====

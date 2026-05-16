@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { createRezervare, anuleazaRezervare } from "@/lib/actions";
-import { Plus, XCircle } from "lucide-react";
+import { Plus, XCircle, Search } from "lucide-react";
 
 interface RezervareItem {
   id: string;
@@ -32,6 +32,18 @@ export function RezervariClient({
   camere: { id: string; numar: string }[];
 }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return rezervari;
+    const q = search.toLowerCase();
+    return rezervari.filter(r =>
+      r.cursant.toLowerCase().includes(q) ||
+      r.camera.toLowerCase().includes(q) ||
+      r.checkIn.includes(q) ||
+      r.statusPlata.toLowerCase().includes(q)
+    );
+  }, [rezervari, search]);
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -123,7 +135,14 @@ export function RezervariClient({
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-lg">Toate rezervările</CardTitle></CardHeader>
+        <CardHeader>        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Caută..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8 w-48 text-sm" />
+          </div>
+          <CardTitle className="text-lg">Toate rezervările ({filtered.length})</CardTitle>
+        </div></CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -140,7 +159,7 @@ export function RezervariClient({
                 </tr>
               </thead>
               <tbody>
-                {rezervari.map((r) => (
+                {filtered.map((r) => (
                   <tr key={r.id} className="border-b last:border-0 hover:bg-muted/50">
                     <td className="py-2 font-medium">{r.cursant}</td>
                     <td className="py-2">{r.camera}</td>
@@ -158,8 +177,8 @@ export function RezervariClient({
                     </td>
                   </tr>
                 ))}
-                {rezervari.length === 0 && (
-                  <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">Nu există rezervări</td></tr>
+                {filtered.length === 0 && (
+                  <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">{search ? "Nicio rezervare găsită" : "Nu există rezervări"}</td></tr>
                 )}
               </tbody>
             </table>
